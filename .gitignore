@@ -27,6 +27,8 @@ share/python-wheels/
 MANIFEST
 books/
 books
+covers/
+covers
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
