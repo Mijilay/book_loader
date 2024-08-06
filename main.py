@@ -23,7 +23,6 @@ def save_pic(url, filename, folder='covers/'):
     response = requests.get(url)
     response.raise_for_status()
     filepath = os.path.join(f'{folder}{sanitize_filename(filename)}')
-    print(filepath)
     with open (filepath, 'wb') as file:
         file.write(response.content)
 
@@ -37,22 +36,19 @@ for number in range(1,11):
         response_url_text.raise_for_status()
         check_for_redirect(response_url_text)
         soup = BeautifulSoup(response_url_read.text, 'lxml')
-        #print(pic_tag)
-        #print(full_image_url)
-        #pic_tag.
-        #print(imagename, ext)
+        comment_tag = soup.find_all('div', class_='texts')
+        comments_text = [comment.find("span", class_='black').text for
+        comment in comment_tag]
+        print(comments_text)
         title_tag = soup.find('h1').text
         title,author = title_tag.split('::')
-        #adress,name = pic_tag.strip()
         filename_book = f'{number}.{title.strip()}'
         save_book(url_text, filename_book)
         pic_tag = soup.find('div', class_='bookimage').find('img')['src']
         full_image_url = urljoin(url_read, pic_tag)
         image_name_ext = (pic_tag.split('/'))[2]
-        # imagename,ext = (image_name_ext.split('/'))
         splited_url = urlsplit(full_image_url)
         scheme, netloc, path, query, fragment = (splited_url)
-        print(splited_url)
         filename = urlsplit(full_image_url).path.split('/')[-1]
         print(filename)
         save_pic(full_image_url, filename)
