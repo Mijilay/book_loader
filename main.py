@@ -40,6 +40,9 @@ for number in range(1,11):
         comments_text = [comment.find("span", class_='black').text for
         comment in comment_tag]
         print(comments_text)
+        genre_tag = soup.find('span', class_='d_book').find_all('a')
+        genres_text = [genre.text for genre in genre_tag]
+        print(genres_text)
         title_tag = soup.find('h1').text
         title,author = title_tag.split('::')
         filename_book = f'{number}.{title.strip()}'
