@@ -4,8 +4,15 @@ from bs4 import BeautifulSoup
 from pathvalidate import sanitize_filename
 from urllib.parse import urljoin
 from urllib.parse import urlsplit, unquote
+import argparse
 
 
+parser = argparse.ArgumentParser()
+parser.add_argument("--start_id", default=1, help='Cкачать книги без вирусов с обложками и без.')
+parser.add_argument("--end_id", default=10)
+args = parser.parse_args()
+arg_str_1 = int(args.start_id)
+arg_str_2 = int(args.end_id)
 def check_for_redirect(response):
     if response.history:
         raise requests.exceptions.HTTPError
@@ -41,7 +48,7 @@ def parse_book_page(response, url):
     book_parameters = {'title': title, 'author':author, 'genre': genres_text, 'comments': comments_text, 'image_url': full_image_url}
     return book_parameters
 
-for number in range(1,11):
+for number in range(arg_str_1, arg_str_2):
     try:  
         url_text = f'https://tululu.org/txt.php?id={number}'
         url_read= f'https://tululu.org/b{number}'
