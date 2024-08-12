@@ -7,9 +7,9 @@ from urllib.parse import urlsplit, unquote
 import argparse
 
 
-parser = argparse.ArgumentParser()
-parser.add_argument("--start_id", default=1, help='Cкачать книги без вирусов с обложками и без.')
-parser.add_argument("--end_id", default=10)
+parser = argparse.ArgumentParser(description='Загрузка книг из бесплатной онлайн библиотеки. Выберите, сколько книг хотите скачать введя диопазон id.')
+parser.add_argument("--start_id", default=1, help='id первой книги')
+parser.add_argument("--end_id", default=10, help='id последней книги')
 args = parser.parse_args()
 arg_str_1 = int(args.start_id)
 arg_str_2 = int(args.end_id)
