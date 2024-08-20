@@ -4,6 +4,7 @@ from bs4 import BeautifulSoup
 from pathvalidate import sanitize_filename
 from urllib.parse import urljoin
 from urllib.parse import urlsplit
+from urllib.parse import urlencode
 import argparse
 
 
@@ -54,12 +55,13 @@ def main():
 
     for number in range(args.start_id, args.end_id):
         try:
-            url_text = f'https://tululu.org/txt.php?id={number}'
+            params = {'id' : number}
+            url_text = f'https://tululu.org/txt.php'
             url = f'https://tululu.org/b{number}'
             response_url = requests.get(url)
             check_for_redirect(response_url)
             response_url.raise_for_status()
-            response_url_text = requests.get(url_text)
+            response_url_text = requests.get(url_text, params=params)
             response_url_text.raise_for_status()
             check_for_redirect(response_url_text)
             parse_book_url = parse_book_page(response_url, url)
