@@ -36,8 +36,7 @@ def save_pic(url, folder='covers/'):
 def parse_book_page(response, url):
     soup = BeautifulSoup(response.text, 'lxml')
     comment_tag = soup.find_all('div', class_='texts')
-    comments_text = [comment.find("span", class_='black').text for
-    comment in comment_tag]
+    comments_text = [comment.find("span", class_='black').text for comment in comment_tag]
     genre_tag = soup.find('span', class_='d_book').find_all('a')
     genres_text = [genre.text for genre in genre_tag]
     title_tag = soup.find('h1').text
