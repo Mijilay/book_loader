@@ -16,6 +16,7 @@ def check_for_redirect(response):
 def save_book(url, filename, folder='books/'):
     os.makedirs('books', exist_ok=True)
     response = requests.get(url)
+    check_for_redirect(response)
     response.raise_for_status()
     filepath = os.path.join(f'{folder}{sanitize_filename(filename)}.txt')
     with open(filepath, 'wb') as file:
