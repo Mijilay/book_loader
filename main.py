@@ -56,19 +56,19 @@ def main():
     for number in range(args.start_id, args.end_id):
         try:
             params = {'id' : number}
-            url_text = f'https://tululu.org/txt.php'
+            text_url = f'https://tululu.org/txt.php'
             url = f'https://tululu.org/b{number}'
             response_url = requests.get(url)
             check_for_redirect(response_url)
             response_url.raise_for_status()
-            response_url_text = requests.get(url_text, params=params)
-            response_url_text.raise_for_status()
-            check_for_redirect(response_url_text)
+            response_text_url = requests.get(text_url, params=params)
+            response_text_url.raise_for_status()
+            check_for_redirect(response_text_url)
             parse_book_url = parse_book_page(response_url, url)
             title = parse_book_url['title']
             filename_book = f'{number}.{title.strip()}'
             full_image_url = parse_book_url['image_url']
-            save_book(url_text, filename_book)
+            save_book(text_url, filename_book)
             save_pic(full_image_url)
         except requests.exceptions.HTTPError:
             print('Страница не существует')
