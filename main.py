@@ -13,11 +13,12 @@ def check_for_redirect(response):
         raise requests.exceptions.HTTPError
 
 
-def save_book(url, filename, folder='books/'):
+def save_book(url, filename, number, folder='books/'):
+    params = {'id' : number}
     os.makedirs('books', exist_ok=True)
-    response = requests.get(url)
-    check_for_redirect(response)
+    response = requests.get(url, params=params)
     response.raise_for_status()
+    check_for_redirect(response)
     filepath = os.path.join(f'{folder}{sanitize_filename(filename)}.txt')
     with open(filepath, 'wb') as file:
         file.write(response.content)
@@ -28,6 +29,7 @@ def save_pic(url, folder='covers/'):
     os.makedirs('covers', exist_ok=True)
     response = requests.get(url)
     response.raise_for_status()
+    check_for_redirect(response)
     filepath = os.path.join(f'{folder}{sanitize_filename(filename)}')
     with open(filepath, 'wb') as file:
         file.write(response.content)
@@ -55,23 +57,24 @@ def main():
 
     for number in range(args.start_id, args.end_id):
         try:
-            params = {'id' : number}
-            text_url = f'https://tululu.org/txt.php'
-            url = f'https://tululu.org/b{number}'
-            response_url = requests.get(url)
-            check_for_redirect(response_url)
-            response_url.raise_for_status()
-            response_text_url = requests.get(text_url, params=params)
-            response_text_url.raise_for_status()
-            check_for_redirect(response_text_url)
-            parse_book_url = parse_book_page(response_url, url)
-            title = parse_book_url['title']
-            filename_book = f'{number}.{title.strip()}'
-            full_image_url = parse_book_url['image_url']
-            save_book(text_url, filename_book)
+            
+            
+            url = f'https://tululu.org/b{number}/'
+            response = requests.get(url)
+            check_for_redirect(response)
+            response.raise_for_status()
+            parsed_book_parameters = parse_book_page(response, url)
+            full_image_url = parsed_book_parameters['image_url']
             save_pic(full_image_url)
+            title = parsed_book_parameters['title']
+            filename_book = f'{number}.{title.strip()}'
+            text_url = f'https://tululu.org/txt.php'
+            save_book(text_url, filename_book, number)
+            
         except requests.exceptions.HTTPError:
             print('Страница не существует')
+        except requests.exceptions.ConnectionError:
+            print('Не удалось подключиться. Повторное подключение...')
 
 
 if __name__ == "__main__":
