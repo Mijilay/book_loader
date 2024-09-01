@@ -57,9 +57,7 @@ def main():
     args = parser.parse_args()
 
     for number in range(args.start_id, args.end_id):
-        try:
-            
-            
+        try: 
             url = f'https://tululu.org/b{number}/'
             response = requests.get(url)
             check_for_redirect(response)
