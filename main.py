@@ -6,6 +6,7 @@ from urllib.parse import urljoin
 from urllib.parse import urlsplit
 from urllib.parse import urlencode
 import argparse
+from time import sleep
 
 
 def check_for_redirect(response):
@@ -75,6 +76,7 @@ def main():
             print('Страница не существует')
         except requests.exceptions.ConnectionError:
             print('Не удалось подключиться. Повторное подключение...')
+            sleep(20)
 
 
 if __name__ == "__main__":
