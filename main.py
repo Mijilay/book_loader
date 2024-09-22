@@ -7,6 +7,7 @@ from urllib.parse import urlsplit
 from urllib.parse import urlencode
 import argparse
 from time import sleep
+import json
 
 
 def check_for_redirect(response):
@@ -36,6 +37,24 @@ def save_pic(url, folder='covers/'):
         file.write(response.content)
 
 
+def get_book_link(start_id, end_id):
+    books_list =[]
+    text_id = []
+    for number in range(start_id,end_id):
+        url =f"https://tululu.org/l55/{number}"
+        response = requests.get(url)
+        response.raise_for_status()
+        check_for_redirect(response)
+        soup = BeautifulSoup(response.text, 'lxml')
+        books = soup.find_all('table', class_='d_book')
+        for book in books:
+            link = book.find("a")["href"]
+            full_book_url = urljoin(url, link)
+            split_link = urlsplit(link).path.split("/")[1]
+            text_id.append(split_link)
+            books_list.append(full_book_url)
+    return books_list, text_id
+
 def parse_book_page(response, url):
     soup = BeautifulSoup(response.text, 'lxml')
     comment_tag = soup.find_all('div', class_='texts')
@@ -55,27 +74,31 @@ def main():
     parser.add_argument("--start_id", default=1, help='id первой книги', type=int)
     parser.add_argument("--end_id", default=10, help='id последней книги', type=int)
     args = parser.parse_args()
-
-    for number in range(args.start_id, args.end_id):
+    books_link, id_links = get_book_link(args.start_id, args.end_id)
+    all_book_parameters = []
+    for book_link, id_link in zip(books_link, id_links):
         try: 
-            url = f'https://tululu.org/b{number}/'
-            response = requests.get(url)
+            response = requests.get(book_link)
             check_for_redirect(response)
             response.raise_for_status()
-            parsed_book_parameters = parse_book_page(response, url)
+            parsed_book_parameters = parse_book_page(response, book_link)
+            all_book_parameters.append(parsed_book_parameters)
             full_image_url = parsed_book_parameters['image_url']
             save_pic(full_image_url)
             title = parsed_book_parameters['title']
-            filename_book = f'{number}.{title.strip()}'
-            text_url = f'https://tululu.org/txt.php'
-            save_book(text_url, filename_book, number)
+            filename_book = title.strip()
+            text_url = 'https://tululu.org/txt.php'
+            save_book(text_url, filename_book, id_link[1:])
             
         except requests.exceptions.HTTPError:
             print('Страница не существует')
         except requests.exceptions.ConnectionError:
             print('Не удалось подключиться. Повторное подключение...')
-            sleep(20)
-
+            sleep(15)
+    with open('books.json', 'w', encoding='utf8') as json_file:
+        json.dump(all_book_parameters, json_file, ensure_ascii=False)
 
 if __name__ == "__main__":
     main()
+
+
