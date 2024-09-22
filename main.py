@@ -46,7 +46,8 @@ def get_book_link(start_id, end_id):
         response.raise_for_status()
         check_for_redirect(response)
         soup = BeautifulSoup(response.text, 'lxml')
-        books = soup.find_all('table', class_='d_book')
+        books_selector = "table.d_book"
+        books = soup.select(books_selector)
         for book in books:
             link = book.find("a")["href"]
             full_book_url = urljoin(url, link)
@@ -57,13 +58,16 @@ def get_book_link(start_id, end_id):
 
 def parse_book_page(response, url):
     soup = BeautifulSoup(response.text, 'lxml')
-    comment_tag = soup.find_all('div', class_='texts')
-    comments_text = [comment.find("span", class_='black').text for comment in comment_tag]
-    genre_tag = soup.find('span', class_='d_book').find_all('a')
+    comment_tag_selector = "div.texts span.black"
+    comment_tag = soup.select(comment_tag_selector)
+    comments_text = [comment.text for comment in comment_tag]
+    genre_tag_selector = "span.d_block a"
+    genre_tag = soup.select(genre_tag_selector)
     genres_text = [genre.text for genre in genre_tag]
     title_tag = soup.find('h1').text
     title, author = title_tag.split('::')
-    pic_tag = soup.find('div', class_='bookimage').find('img')['src']
+    pic_tag_selector = "div.bookimage img"
+    pic_tag = soup.select_one(pic_tag_selector)['src']
     full_image_url = urljoin(url, pic_tag)
     book_parameters = {'title': title, 'author': author, 'genre': genres_text, 'comments': comments_text, 'image_url': full_image_url}
     return book_parameters
