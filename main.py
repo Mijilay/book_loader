@@ -75,10 +75,10 @@ def parse_book_page(response, url):
 
 def main():
     parser = argparse.ArgumentParser(description='Загрузка книг из бесплатной онлайн библиотеки. Выберите, сколько книг хотите скачать введя диапазон id.')
-    parser.add_argument("--start_id", default=1, help='id первой книги', type=int)
-    parser.add_argument("--end_id", default=10, help='id последней книги', type=int)
+    parser.add_argument("--start_page", default=1, help='номер первой страницы', type=int)
+    parser.add_argument("--end_page", default=701, help='номер крайней страницы', type=int)
     args = parser.parse_args()
-    books_link, id_links = get_book_link(args.start_id, args.end_id)
+    books_link, id_links = get_book_link(args.start_page, args.end_page)
     all_book_parameters = []
     for book_link, id_link in zip(books_link, id_links):
         try: 
