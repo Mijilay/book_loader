@@ -4,7 +4,6 @@ from bs4 import BeautifulSoup
 from pathvalidate import sanitize_filename
 from urllib.parse import urljoin
 from urllib.parse import urlsplit
-from urllib.parse import urlencode
 import argparse
 from time import sleep
 import json
@@ -81,13 +80,13 @@ def main():
     parser.add_argument("--skip_imgs", help='пропустить скачивание обложек', action="store_true")
     parser.add_argument("--skip_txts", help='пропустить скачивание книг', action="store_true")
     args = parser.parse_args()
-    books_link, id_links = get_book_link(args.start_page, args.end_page)
+    initial_id, last_id = get_book_link(args.start_page, args.end_page)
     imgs_dir = f"./{args.dest_folder}/images"
     txt_dir = f"./{args.dest_folder}/txt"
     os.makedirs(txt_dir, exist_ok=True)
     os.makedirs(imgs_dir, exist_ok=True)
     all_book_parameters = []
-    for book_link, id_link in zip(books_link, id_links):
+    for book_link, id_link in zip(initial_id, last_id):
         try: 
             response = requests.get(book_link)
             check_for_redirect(response)
