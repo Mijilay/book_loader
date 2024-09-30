@@ -29,6 +29,8 @@ books/
 books
 covers/
 covers
+books.json
+parse_tululu_category.py
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
