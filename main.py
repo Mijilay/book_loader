@@ -15,24 +15,24 @@ def check_for_redirect(response):
         raise requests.exceptions.HTTPError
 
 
-def save_book(url, filename, number, folder='books/'):
+def save_book(url, filename, number, folder='texts/'):
     params = {'id' : number}
-    os.makedirs('books', exist_ok=True)
+    os.makedirs(folder, exist_ok=True)
     response = requests.get(url, params=params)
     response.raise_for_status()
     check_for_redirect(response)
-    filepath = os.path.join(f'{folder}{sanitize_filename(filename)}.txt')
+    filepath = os.path.join(folder, f'{sanitize_filename(filename)}.txt')
     with open(filepath, 'wb') as file:
         file.write(response.content)
 
 
 def save_pic(url, folder='covers/'):
     filename = urlsplit(url).path.split('/')[-1]
-    os.makedirs('covers', exist_ok=True)
+    os.makedirs(folder, exist_ok=True)
     response = requests.get(url)
     response.raise_for_status()
     check_for_redirect(response)
-    filepath = os.path.join(f'{folder}{sanitize_filename(filename)}')
+    filepath = os.path.join(folder, f'{sanitize_filename(filename)}')
     with open(filepath, 'wb') as file:
         file.write(response.content)
 
@@ -77,8 +77,15 @@ def main():
     parser = argparse.ArgumentParser(description='Загрузка книг из бесплатной онлайн библиотеки. Выберите, сколько книг хотите скачать введя диапазон id.')
     parser.add_argument("--start_page", default=1, help='номер первой страницы', type=int)
     parser.add_argument("--end_page", default=701, help='номер крайней страницы', type=int)
+    parser.add_argument("--dest_folder",default="books", help='путь к каталогу')
+    parser.add_argument("--skip_imgs", help='пропустить скачивание обложек', action="store_true")
+    parser.add_argument("--skip_txts", help='пропустить скачивание книг', action="store_true")
     args = parser.parse_args()
     books_link, id_links = get_book_link(args.start_page, args.end_page)
+    imgs_dir = f"./{args.dest_folder}/images"
+    txt_dir = f"./{args.dest_folder}/txt"
+    os.makedirs(txt_dir, exist_ok=True)
+    os.makedirs(imgs_dir, exist_ok=True)
     all_book_parameters = []
     for book_link, id_link in zip(books_link, id_links):
         try: 
@@ -88,11 +95,13 @@ def main():
             parsed_book_parameters = parse_book_page(response, book_link)
             all_book_parameters.append(parsed_book_parameters)
             full_image_url = parsed_book_parameters['image_url']
-            save_pic(full_image_url)
+            if not args.skip_imgs:   
+                save_pic(full_image_url, folder=imgs_dir)
             title = parsed_book_parameters['title']
             filename_book = title.strip()
             text_url = 'https://tululu.org/txt.php'
-            save_book(text_url, filename_book, id_link[1:])
+            if not args.skip_txts:
+                save_book(text_url, filename_book, id_link[1:], folder=txt_dir)
             
         except requests.exceptions.HTTPError:
             print('Страница не существует')
