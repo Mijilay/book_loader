@@ -36,24 +36,30 @@ def save_pic(url, folder='covers/'):
         file.write(response.content)
 
 
-def get_book_link(start_id, end_id):
-    books_list =[]
-    text_id = []
+def get_books_links(start_id, end_id):
+    books =[]
+    text_ids = []
     for number in range(start_id,end_id):
-        url =f"https://tululu.org/l55/{number}"
-        response = requests.get(url)
-        response.raise_for_status()
-        check_for_redirect(response)
-        soup = BeautifulSoup(response.text, 'lxml')
-        books_selector = "table.d_book"
-        books = soup.select(books_selector)
-        for book in books:
-            link = book.find("a")["href"]
-            full_book_url = urljoin(url, link)
-            split_link = urlsplit(link).path.split("/")[1]
-            text_id.append(split_link)
-            books_list.append(full_book_url)
-    return books_list, text_id
+        try:
+            url =f"https://tululu.org/l55/{number}"
+            response = requests.get(url)
+            response.raise_for_status()
+            check_for_redirect(response)
+            soup = BeautifulSoup(response.text, 'lxml')
+            books_selector = "table.d_book"
+            books = soup.select(books_selector)
+            for book in books:
+                link = book.find("a")["href"]
+                full_book_url = urljoin(url, link)
+                splited_link = urlsplit(link).path.split("/")[1]
+                text_ids.append(splited_link)
+                books.append(full_book_url)
+        except requests.exceptions.HTTPError:
+            print('Страница не существует')
+        except requests.exceptions.ConnectionError:
+            print('Не удалось подключиться. Повторное подключение...')
+            sleep(15)
+    return books, text_ids
 
 def parse_book_page(response, url):
     soup = BeautifulSoup(response.text, 'lxml')
@@ -80,13 +86,13 @@ def main():
     parser.add_argument("--skip_imgs", help='пропустить скачивание обложек', action="store_true")
     parser.add_argument("--skip_txts", help='пропустить скачивание книг', action="store_true")
     args = parser.parse_args()
-    initial_id, last_id = get_book_link(args.start_page, args.end_page)
+    first_id, last_id = get_books_links(args.start_page, args.end_page)
     imgs_dir = f"./{args.dest_folder}/images"
     txt_dir = f"./{args.dest_folder}/txt"
     os.makedirs(txt_dir, exist_ok=True)
     os.makedirs(imgs_dir, exist_ok=True)
     all_book_parameters = []
-    for book_link, id_link in zip(initial_id, last_id):
+    for book_link, id_link in zip(first_id, last_id):
         try: 
             response = requests.get(book_link)
             check_for_redirect(response)
